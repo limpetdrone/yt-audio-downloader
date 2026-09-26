@@ -3,6 +3,8 @@ import AVFoundation
 
 public struct ContentView: View {
     @StateObject private var viewModel = DownloaderViewModel()
+    @State private var serverUrlDraft: String = ""
+    @State private var showServerSettings: Bool = false
 
     public init() {}
 
@@ -64,7 +66,60 @@ public struct ContentView: View {
                     }
                 }
 
-                // Section 4: Downloaded Tracks Library
+                #if os(iOS)
+                // Section 4: Backend Server Connection (iOS only)
+                Section("Backend Server") {
+                    DisclosureGroup(isExpanded: $showServerSettings) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            Text("Your Mac acts as your personal download engine when on the same Wi-Fi.")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+
+                            HStack {
+                                TextField("http://192.168.0.61:8000", text: $serverUrlDraft)
+                                    .textFieldStyle(.roundedBorder)
+                                    .keyboardType(.URL)
+                                    .autocapitalization(.none)
+                                    .disableAutocorrection(true)
+
+                                Button("Save") {
+                                    viewModel.updateServerUrl(serverUrlDraft)
+                                }
+                                .buttonStyle(.bordered)
+                            }
+
+                            Button {
+                                Task {
+                                    await viewModel.checkServerHealth()
+                                }
+                            } label: {
+                                HStack {
+                                    Image(systemName: "arrow.clockwise")
+                                    Text("Test Connection")
+                                }
+                                .font(.footnote)
+                            }
+                        }
+                        .padding(.vertical, 4)
+                    } label: {
+                        HStack {
+                            Image(systemName: "server.rack")
+                            Text("Download Server")
+                            Spacer()
+                            HStack(spacing: 4) {
+                                Circle()
+                                    .fill(viewModel.isServerConnected ? Color.green : Color.red)
+                                    .frame(width: 8, height: 8)
+                                Text(viewModel.isServerConnected ? "Online" : "Offline")
+                                    .font(.caption)
+                                    .foregroundColor(viewModel.isServerConnected ? .green : .red)
+                            }
+                        }
+                    }
+                }
+                #endif
+
+                // Section 5: Downloaded Tracks Library
                 Section("Downloaded Tracks (\(viewModel.tracks.count))") {
                     if viewModel.tracks.isEmpty {
                         Text("No tracks downloaded yet.")
@@ -116,6 +171,12 @@ public struct ContentView: View {
                 }
             }
             .navigationTitle("YouTube MP3")
+            .onAppear {
+                serverUrlDraft = viewModel.serverUrl
+                Task {
+                    await viewModel.checkServerHealth()
+                }
+            }
         }
     }
 }

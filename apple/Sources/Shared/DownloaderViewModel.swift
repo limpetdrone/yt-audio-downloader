@@ -12,12 +12,17 @@ public class DownloaderViewModel: ObservableObject {
     @Published public var tracks: [DownloadedTrack] = []
     @Published public var currentlyPlayingID: UUID? = nil
     @Published public var isPlaying: Bool = false
+    @Published public var serverUrl: String = UserDefaults.standard.string(forKey: "backend_server_url") ?? "http://192.168.0.61:8000"
+    @Published public var isServerConnected: Bool = false
 
     private var audioPlayer: AVAudioPlayer?
     private let storageKey = "SavedDownloadedTracks"
 
     public init() {
         loadSavedTracks()
+        Task {
+            await checkServerHealth()
+        }
     }
 
     public var saveDirectory: URL {
@@ -27,6 +32,35 @@ public class DownloaderViewModel: ObservableObject {
         #else
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         #endif
+    }
+
+    public func updateServerUrl(_ newUrl: String) {
+        let cleaned = newUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        self.serverUrl = cleaned
+        UserDefaults.standard.set(cleaned, forKey: "backend_server_url")
+        Task {
+            await checkServerHealth()
+        }
+    }
+
+    public func checkServerHealth() async {
+        let trimmed = serverUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let url = URL(string: trimmed.hasSuffix("/") ? "\(trimmed)health" : "\(trimmed)/health") else {
+            isServerConnected = false
+            return
+        }
+        do {
+            var request = URLRequest(url: url)
+            request.timeoutInterval = 3
+            let (_, response) = try await URLSession.shared.data(for: request)
+            if let http = response as? HTTPURLResponse, http.statusCode == 200 {
+                isServerConnected = true
+            } else {
+                isServerConnected = false
+            }
+        } catch {
+            isServerConnected = false
+        }
     }
 
     public func pasteFromClipboard() {
@@ -64,10 +98,8 @@ public class DownloaderViewModel: ObservableObject {
 
     private func executeDownload(for url: String) async {
         #if os(macOS)
-        // Native macOS direct execution using embedded Python/yt-dlp
         await executeMacLocalDownload(for: url)
         #else
-        // iOS: Communicates with local network or cloud downloader backend
         await executeRemoteDownload(for: url)
         #endif
     }
@@ -137,13 +169,18 @@ public class DownloaderViewModel: ObservableObject {
     #endif
 
     private func executeRemoteDownload(for url: String) async {
-        // Backend API endpoint (Local server or Cloud Run)
-        let backendUrlString = "http://localhost:8000/download"
-        guard let endpoint = URL(string: backendUrlString) else { return }
+        let trimmedServer = serverUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        let endpointString = trimmedServer.hasSuffix("/") ? "\(trimmedServer)download" : "\(trimmedServer)/download"
+        guard let endpoint = URL(string: endpointString) else {
+            statusMessage = "Invalid Server URL. Check Server Settings."
+            isDownloading = false
+            return
+        }
 
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.timeoutInterval = 120
 
         let payload: [String: String] = [
             "url": url,
@@ -152,27 +189,31 @@ public class DownloaderViewModel: ObservableObject {
 
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-            statusMessage = "Downloading via server..."
-            progress = 0.5
+            statusMessage = "Downloading and converting on server..."
+            progress = 0.4
 
             let (data, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                // Save MP3 file locally in app sandbox Documents folder
-                let fileName = "Downloaded_\(Int(Date().timeIntervalSince1970)).mp3"
+                let trackTitle = httpResponse.value(forHTTPHeaderField: "X-Track-Title") ?? "Audio_\(Int(Date().timeIntervalSince1970))"
+                let sanitizedTitle = trackTitle.replacingOccurrences(of: "/", with: "-")
+                let fileName = "\(sanitizedTitle).mp3"
                 let destination = saveDirectory.appendingPathComponent(fileName)
+
                 try data.write(to: destination)
 
-                let newTrack = DownloadedTrack(title: "YouTube Audio", fileName: fileName, quality: selectedQuality.rawValue)
+                let newTrack = DownloadedTrack(title: trackTitle, fileName: fileName, quality: selectedQuality.rawValue)
                 self.tracks.insert(newTrack, at: 0)
                 self.saveTracks()
 
                 progress = 1.0
-                statusMessage = "✅ Download complete! Saved to library."
+                statusMessage = "✅ Download complete: \(trackTitle)"
+                isServerConnected = true
             } else {
-                statusMessage = "Server returned an error."
+                statusMessage = "❌ Server error (Status \( (response as? HTTPURLResponse)?.statusCode ?? 500 ))"
             }
         } catch {
-            statusMessage = "Could not reach download server. Ensure server is running."
+            statusMessage = "❌ Could not reach server at \(trimmedServer). Ensure server is running and your iPhone is on Wi-Fi."
+            isServerConnected = false
         }
         isDownloading = false
     }

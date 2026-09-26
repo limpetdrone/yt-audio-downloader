@@ -16,6 +16,8 @@ targets:
     platform: iOS
     sources:
       - path: Sources/Shared
+    info:
+      path: Sources/iOS/Info.plist
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.davidpoka.ytaudiodownloader
       INFOPLIST_KEY_CFBundleDisplayName: "YT Audio"
@@ -24,7 +26,7 @@ targets:
       INFOPLIST_KEY_UILaunchScreen_Generation: YES
       INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
       GENERATE_INFOPLIST_FILE: YES
-      CURRENT_PROJECT_VERSION: 2
+      CURRENT_PROJECT_VERSION: 3
       MARKETING_VERSION: 1.0.0
       TARGETED_DEVICE_FAMILY: "1,2"
       "INFOPLIST_KEY_UISupportedInterfaceOrientations": "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight"
@@ -43,7 +45,7 @@ targets:
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
       GENERATE_INFOPLIST_FILE: YES
-      CURRENT_PROJECT_VERSION: 2
+      CURRENT_PROJECT_VERSION: 3
       MARKETING_VERSION: 1.0.0
       ENABLE_APP_SANDBOX: YES
       CODE_SIGN_ENTITLEMENTS: Sources/macOS/YTAudioDownloader_macOS.entitlements
