@@ -16,7 +16,7 @@ import yt_dlp
 os.environ['SSL_CERT_FILE'] = certifi.where()
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 
-PORT = int(os.environ.get('PORT', 10000))
+PORT = int(os.environ.get('PORT', 8000))
 
 class DownloadHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -52,37 +52,44 @@ class DownloadHandler(BaseHTTPRequestHandler):
                 video_url = data.get('url', '').strip()
                 quality = data.get('quality', '320')
 
+                media_type = data.get('type', 'audio')
+
                 if not video_url:
                     self.send_error(400, "Missing URL")
                     return
 
-                print(f"[Backend] Starting download for: {video_url} (Quality: {quality} kbps)")
+                print(f"[Backend] Starting download for: {video_url} (Type: {media_type}, Quality: {quality} kbps)")
 
                 with tempfile.TemporaryDirectory() as tmpdir:
                     out_template = os.path.join(tmpdir, '%(title)s.%(ext)s')
-                    ydl_opts = {
-                        'format': 'bestaudio/best',
-                        'outtmpl': out_template,
-                        'nocheckcertificate': True,
-                        'extractor_args': {
-                            'youtube': {
-                                'player_client': ['android', 'ios']
-                            }
-                        },
-                        'postprocessors': [
-                            {
-                                'key': 'FFmpegExtractAudio',
-                                'preferredcodec': 'mp3',
-                                'preferredquality': quality,
-                            },
-                            {
-                                'key': 'FFmpegMetadata',
-                                'add_metadata': True,
-                            }
-                        ],
-                        'quiet': True,
-                        'no_warnings': True,
-                    }
+                    
+                    if media_type == 'video':
+                        ydl_opts = {
+                            'format': 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best',
+                            'outtmpl': out_template,
+                            'nocheckcertificate': True,
+                            'quiet': True,
+                            'no_warnings': True,
+                        }
+                    else:
+                        ydl_opts = {
+                            'format': 'bestaudio/best',
+                            'outtmpl': out_template,
+                            'nocheckcertificate': True,
+                            'postprocessors': [
+                                {
+                                    'key': 'FFmpegExtractAudio',
+                                    'preferredcodec': 'mp3',
+                                    'preferredquality': quality,
+                                },
+                                {
+                                    'key': 'FFmpegMetadata',
+                                    'add_metadata': True,
+                                }
+                            ],
+                            'quiet': True,
+                            'no_warnings': True,
+                        }
 
                     ffmpeg_path = shutil.which("ffmpeg") or "/usr/bin/ffmpeg" or "/opt/homebrew/bin/ffmpeg"
                     if os.path.exists(ffmpeg_path):
@@ -94,33 +101,36 @@ class DownloadHandler(BaseHTTPRequestHandler):
 
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(video_url, download=True)
-                        title = info.get('title', 'audio')
+                        title = info.get('title', 'media')
 
-                    # Find generated mp3
-                    mp3_files = [f for f in os.listdir(tmpdir) if f.endswith('.mp3')]
-                    if not mp3_files:
+                    # Find generated file
+                    ext = '.mp4' if media_type == 'video' else '.mp3'
+                    mime = 'video/mp4' if media_type == 'video' else 'audio/mpeg'
+                    matched_files = [f for f in os.listdir(tmpdir) if f.endswith(ext)]
+                    if not matched_files:
                         self.send_response(500)
                         self.send_header('Content-Type', 'application/json; charset=utf-8')
                         self.send_header('Access-Control-Allow-Origin', '*')
                         self.end_headers()
-                        self.wfile.write(json.dumps({"error": "MP3 file generation failed"}).encode('utf-8'))
+                        self.wfile.write(json.dumps({"error": f"{ext.upper()} file generation failed"}).encode('utf-8'))
                         return
 
-                    mp3_path = os.path.join(tmpdir, mp3_files[0])
-                    file_size = os.path.getsize(mp3_path)
+                    file_path = os.path.join(tmpdir, matched_files[0])
+                    file_size = os.path.getsize(file_path)
 
                     self.send_response(200)
-                    self.send_header('Content-Type', 'audio/mpeg')
+                    self.send_header('Content-Type', mime)
                     self.send_header('Content-Length', str(file_size))
                     self.send_header('Access-Control-Allow-Origin', '*')
-                    self.send_header('Access-Control-Expose-Headers', 'X-Track-Title')
+                    self.send_header('Access-Control-Expose-Headers', 'X-Track-Title, X-Media-Type')
                     self.send_header('X-Track-Title', title.encode('ascii', 'ignore').decode('ascii'))
+                    self.send_header('X-Media-Type', media_type)
                     self.end_headers()
 
-                    with open(mp3_path, 'rb') as f:
+                    with open(file_path, 'rb') as f:
                         shutil.copyfileobj(f, self.wfile)
 
-                    print(f"[Backend] Successfully served: {title} ({file_size} bytes)")
+                    print(f"[Backend] Successfully served {media_type}: {title} ({file_size} bytes)")
 
             except Exception as e:
                 err_msg = str(e)

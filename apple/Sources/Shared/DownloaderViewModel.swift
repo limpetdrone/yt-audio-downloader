@@ -5,6 +5,7 @@ import AVFoundation
 @MainActor
 public class DownloaderViewModel: ObservableObject {
     @Published public var urlInput: String = ""
+    @Published public var downloadType: DownloadType = .audio
     @Published public var selectedQuality: DownloadQuality = .best
     @Published public var isDownloading: Bool = false
     @Published public var progress: Double = 0.0
@@ -12,17 +13,30 @@ public class DownloaderViewModel: ObservableObject {
     @Published public var tracks: [DownloadedTrack] = []
     @Published public var currentlyPlayingID: UUID? = nil
     @Published public var isPlaying: Bool = false
-    @Published public var serverUrl: String = UserDefaults.standard.string(forKey: "backend_server_url") ?? "http://192.168.0.61:8000"
+    @Published public var activeVideoTrack: DownloadedTrack? = nil
+    @Published public var serverUrl: String = UserDefaults.standard.string(forKey: "backend_server_url") ?? "https://francis-seeing-module-bolt.trycloudflare.com"
     @Published public var isServerConnected: Bool = false
 
     private var audioPlayer: AVAudioPlayer?
     private let storageKey = "SavedDownloadedTracks"
 
     public init() {
+        configureAudioSession()
         loadSavedTracks()
         Task {
             await checkServerHealth()
         }
+    }
+
+    private func configureAudioSession() {
+        #if os(iOS)
+        do {
+            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .default, options: [])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("[AudioSession] Failed to set playback category: \(error)")
+        }
+        #endif
     }
 
     public var saveDirectory: URL {
@@ -32,6 +46,10 @@ public class DownloaderViewModel: ObservableObject {
         #else
         return FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
         #endif
+    }
+
+    public func fileURL(for track: DownloadedTrack) -> URL {
+        saveDirectory.appendingPathComponent(track.fileName)
     }
 
     public func updateServerUrl(_ newUrl: String) {
@@ -51,7 +69,7 @@ public class DownloaderViewModel: ObservableObject {
         }
         do {
             var request = URLRequest(url: url)
-            request.timeoutInterval = 3
+            request.timeoutInterval = 8
             let (_, response) = try await URLSession.shared.data(for: request)
             if let http = response as? HTTPURLResponse, http.statusCode == 200 {
                 isServerConnected = true
@@ -107,29 +125,38 @@ public class DownloaderViewModel: ObservableObject {
     #if os(macOS)
     private func executeMacLocalDownload(for url: String) async {
         do {
-            statusMessage = "Extracting audio with yt-dlp & FFmpeg..."
+            statusMessage = "Extracting \(downloadType == .video ? "video" : "audio") with yt-dlp & FFmpeg..."
             progress = 0.3
 
             let pythonPath = "/opt/homebrew/bin/python3"
+            let isVideo = (downloadType == .video)
+            let outtmpl = isVideo ? "\(saveDirectory.path)/%(title)s.mp4" : "\(saveDirectory.path)/%(title)s.%(ext)s"
+
+            let postproc = isVideo ? "[{'key': 'FFmpegVideoConvertor', 'preferedformat': 'mp4'}]" : """
+            [{
+                'key': 'FFmpegExtractAudio',
+                'preferredcodec': 'mp3',
+                'preferredquality': '\(selectedQuality.rawValue)',
+            }]
+            """
+
+            let formatSpec = isVideo ? "bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best" : "bestaudio/best"
+
             let ytDlpScript = """
             import os, sys, certifi, yt_dlp
             os.environ['SSL_CERT_FILE'] = certifi.where()
             ydl_opts = {
-                'format': 'bestaudio/best',
-                'outtmpl': '\(saveDirectory.path)/%(title)s.%(ext)s',
+                'format': '\(formatSpec)',
+                'outtmpl': '\(outtmpl)',
                 'nocheckcertificate': True,
-                'postprocessors': [{
-                    'key': 'FFmpegExtractAudio',
-                    'preferredcodec': 'mp3',
-                    'preferredquality': '\(selectedQuality.rawValue)',
-                }],
+                'postprocessors': \(postproc),
                 'quiet': True,
                 'ffmpeg_location': '/opt/homebrew/bin',
                 'js_runtimes': {'node': {'path': '/opt/homebrew/bin/node'}}
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info('\(url)', download=True)
-                print(info.get('title', 'Audio Track'))
+                print(info.get('title', 'Media Item'))
             """
 
             let process = Process()
@@ -142,7 +169,7 @@ public class DownloaderViewModel: ObservableObject {
 
             try process.run()
             self.progress = 0.7
-            self.statusMessage = "Converting to MP3 (FFmpeg)..."
+            self.statusMessage = isVideo ? "Merging video & audio..." : "Converting to MP3 (FFmpeg)..."
 
             process.waitUntilExit()
 
@@ -150,9 +177,10 @@ public class DownloaderViewModel: ObservableObject {
             let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
 
             if process.terminationStatus == 0 {
-                let title = output.components(separatedBy: .newlines).last ?? "Downloaded Audio"
-                let fileName = "\(title).mp3"
-                let newTrack = DownloadedTrack(title: title, fileName: fileName, quality: selectedQuality.rawValue)
+                let title = output.components(separatedBy: .newlines).last ?? "Downloaded Item"
+                let ext = isVideo ? "mp4" : "mp3"
+                let fileName = "\(title).\(ext)"
+                let newTrack = DownloadedTrack(title: title, fileName: fileName, quality: selectedQuality.rawValue, isVideo: isVideo)
                 self.tracks.insert(newTrack, at: 0)
                 self.saveTracks()
 
@@ -180,28 +208,39 @@ public class DownloaderViewModel: ObservableObject {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 120
+        request.timeoutInterval = 240
 
         let payload: [String: String] = [
             "url": url,
-            "quality": selectedQuality.rawValue
+            "quality": selectedQuality.rawValue,
+            "type": downloadType.rawValue
         ]
 
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-            statusMessage = "Downloading and converting on server..."
+            statusMessage = downloadType == .video ? "Downloading video from YouTube..." : "Converting audio to MP3..."
             progress = 0.4
 
             let (data, response) = try await URLSession.shared.data(for: request)
             if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                let trackTitle = httpResponse.value(forHTTPHeaderField: "X-Track-Title") ?? "Audio_\(Int(Date().timeIntervalSince1970))"
+                let trackTitle = httpResponse.value(forHTTPHeaderField: "X-Track-Title") ?? "Media_\(Int(Date().timeIntervalSince1970))"
+                let isVideoResp = (httpResponse.value(forHTTPHeaderField: "X-Media-Type") == "video")
+                    || (httpResponse.value(forHTTPHeaderField: "Content-Type")?.contains("video") == true)
+                    || (downloadType == .video)
+
                 let sanitizedTitle = trackTitle.replacingOccurrences(of: "/", with: "-")
-                let fileName = "\(sanitizedTitle).mp3"
+                let ext = isVideoResp ? "mp4" : "mp3"
+                let fileName = "\(sanitizedTitle).\(ext)"
                 let destination = saveDirectory.appendingPathComponent(fileName)
 
                 try data.write(to: destination)
 
-                let newTrack = DownloadedTrack(title: trackTitle, fileName: fileName, quality: selectedQuality.rawValue)
+                let newTrack = DownloadedTrack(
+                    title: trackTitle,
+                    fileName: fileName,
+                    quality: selectedQuality.rawValue,
+                    isVideo: isVideoResp
+                )
                 self.tracks.insert(newTrack, at: 0)
                 self.saveTracks()
 
@@ -209,16 +248,23 @@ public class DownloaderViewModel: ObservableObject {
                 statusMessage = "✅ Download complete: \(trackTitle)"
                 isServerConnected = true
             } else {
-                statusMessage = "❌ Server error (Status \( (response as? HTTPURLResponse)?.statusCode ?? 500 ))"
+                statusMessage = "❌ Server returned status \((response as? HTTPURLResponse)?.statusCode ?? 500)"
             }
         } catch {
-            statusMessage = "❌ Could not reach server at \(trimmedServer). Ensure server is running and your iPhone is on Wi-Fi."
+            statusMessage = "❌ Server unreachable. Please check connection."
             isServerConnected = false
         }
         isDownloading = false
     }
 
     public func togglePlay(track: DownloadedTrack) {
+        if track.isVideo {
+            // Open native video player sheet
+            activeVideoTrack = track
+            return
+        }
+
+        configureAudioSession()
         let fileURL = saveDirectory.appendingPathComponent(track.fileName)
 
         if currentlyPlayingID == track.id {
@@ -239,7 +285,7 @@ public class DownloaderViewModel: ObservableObject {
             currentlyPlayingID = track.id
             isPlaying = true
         } catch {
-            statusMessage = "Failed to play audio file."
+            statusMessage = "Failed to play audio: \(error.localizedDescription)"
         }
     }
 
