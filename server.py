@@ -64,6 +64,11 @@ class DownloadHandler(BaseHTTPRequestHandler):
                         'format': 'bestaudio/best',
                         'outtmpl': out_template,
                         'nocheckcertificate': True,
+                        'extractor_args': {
+                            'youtube': {
+                                'player_client': ['android', 'ios']
+                            }
+                        },
                         'postprocessors': [
                             {
                                 'key': 'FFmpegExtractAudio',
@@ -94,7 +99,11 @@ class DownloadHandler(BaseHTTPRequestHandler):
                     # Find generated mp3
                     mp3_files = [f for f in os.listdir(tmpdir) if f.endswith('.mp3')]
                     if not mp3_files:
-                        self.send_error(500, "MP3 file generation failed")
+                        self.send_response(500)
+                        self.send_header('Content-Type', 'application/json; charset=utf-8')
+                        self.send_header('Access-Control-Allow-Origin', '*')
+                        self.end_headers()
+                        self.wfile.write(json.dumps({"error": "MP3 file generation failed"}).encode('utf-8'))
                         return
 
                     mp3_path = os.path.join(tmpdir, mp3_files[0])
@@ -114,10 +123,19 @@ class DownloadHandler(BaseHTTPRequestHandler):
                     print(f"[Backend] Successfully served: {title} ({file_size} bytes)")
 
             except Exception as e:
-                print(f"[Backend] Error: {e}")
-                self.send_error(500, str(e))
+                err_msg = str(e)
+                print(f"[Backend] Error: {err_msg}")
+                self.send_response(500)
+                self.send_header('Content-Type', 'application/json; charset=utf-8')
+                self.send_header('Access-Control-Allow-Origin', '*')
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": err_msg}).encode('utf-8'))
         else:
-            self.send_error(404, "Endpoint not found")
+            self.send_response(404)
+            self.send_header('Content-Type', 'application/json')
+            self.send_header('Access-Control-Allow-Origin', '*')
+            self.end_headers()
+            self.wfile.write(json.dumps({"error": "Endpoint not found"}).encode('utf-8'))
 
 def run():
     server = HTTPServer(('0.0.0.0', PORT), DownloadHandler)
