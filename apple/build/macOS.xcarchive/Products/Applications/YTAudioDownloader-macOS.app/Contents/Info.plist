@@ -10,8 +10,12 @@
 	<string>YT Audio</string>
 	<key>CFBundleExecutable</key>
 	<string>YTAudioDownloader-macOS</string>
+	<key>CFBundleIconFile</key>
+	<string>AppIcon</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.davidpoka.ytaudiodownloader.mac</string>
+	<string>com.davidpoka.ytaudiodownloader</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -25,7 +29,7 @@
 		<string>MacOSX</string>
 	</array>
 	<key>CFBundleVersion</key>
-	<string>1</string>
+	<string>2</string>
 	<key>DTCompiler</key>
 	<string>com.apple.compilers.llvm.clang.1_0</string>
 	<key>DTPlatformBuild</key>
@@ -42,6 +46,8 @@
 	<string>2660</string>
 	<key>DTXcodeBuild</key>
 	<string>17F113</string>
+	<key>LSApplicationCategoryType</key>
+	<string>public.app-category.music</string>
 	<key>LSMinimumSystemVersion</key>
 	<string>13.0</string>
 </dict>

@@ -4,9 +4,21 @@
 <dict>
 	<key>files</key>
 	<dict>
+		<key>AppIcon60x60@2x.png</key>
+		<data>
+		SjScTz2daUb7KWj+sJ6l+/oyPVs=
+		</data>
+		<key>AppIcon76x76@2x~ipad.png</key>
+		<data>
+		Vj2oJchxxLq1dLO+SA5niqPW5GE=
+		</data>
+		<key>Assets.car</key>
+		<data>
+		ThSmH6fqmutvC51k1Lq4dJyMwfU=
+		</data>
 		<key>Info.plist</key>
 		<data>
-		M/Mutn+faP1VcHPH2Poq1+DxiQ4=
+		7bnEVKlfY/DKdb4zY/BxZq21su4=
 		</data>
 		<key>PkgInfo</key>
 		<data>
@@ -19,6 +31,27 @@
 	</dict>
 	<key>files2</key>
 	<dict>
+		<key>AppIcon60x60@2x.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			UQxJ1x8uueKwA4hzcjYEpzcRFAJ0NQI8jf9W/PkuXto=
+			</data>
+		</dict>
+		<key>AppIcon76x76@2x~ipad.png</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			p4JIfI5s3AkveVD5BV/hG6nxhLg0QNh0uimG9q8HMHY=
+			</data>
+		</dict>
+		<key>Assets.car</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			q66DsVrsEDBt6+wfh/z6E4pNryyoPNjzUuE3r4NnZas=
+			</data>
+		</dict>
 		<key>embedded.mobileprovision</key>
 		<dict>
 			<key>hash2</key>
