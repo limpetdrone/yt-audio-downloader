@@ -16,7 +16,7 @@ import yt_dlp
 os.environ['SSL_CERT_FILE'] = certifi.where()
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 
-PORT = 8000
+PORT = int(os.environ.get('PORT', 8000))
 
 class DownloadHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
@@ -32,7 +32,7 @@ class DownloadHandler(BaseHTTPRequestHandler):
             self.send_header('Content-Type', 'application/json')
             self.send_header('Access-Control-Allow-Origin', '*')
             self.end_headers()
-            self.wfile.write(json.dumps({"status": "ok", "service": "YT Audio Backend"}).encode())
+            self.wfile.write(json.dumps({"status": "ok", "service": "YT Audio Cloud Backend"}).encode())
         else:
             self.send_response(404)
             self.end_headers()
@@ -73,11 +73,11 @@ class DownloadHandler(BaseHTTPRequestHandler):
                         'no_warnings': True,
                     }
 
-                    ffmpeg_path = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg"
+                    ffmpeg_path = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg" or "/usr/bin/ffmpeg"
                     if os.path.exists(ffmpeg_path):
                         ydl_opts['ffmpeg_location'] = os.path.dirname(ffmpeg_path)
 
-                    node_path = shutil.which("node") or "/opt/homebrew/bin/node"
+                    node_path = shutil.which("node") or "/opt/homebrew/bin/node" or "/usr/bin/node"
                     if os.path.exists(node_path):
                         ydl_opts['js_runtimes'] = {'node': {'path': node_path}}
 
@@ -114,8 +114,7 @@ class DownloadHandler(BaseHTTPRequestHandler):
 
 def run():
     server = HTTPServer(('0.0.0.0', PORT), DownloadHandler)
-    print(f"🎵 YT Audio Backend Server running on http://0.0.0.0:{PORT}")
-    print(f"📱 Access from your iPhone at: http://192.168.0.61:{PORT}")
+    print(f"🎵 YT Audio Cloud Backend running on http://0.0.0.0:{PORT}")
     server.serve_forever()
 
 if __name__ == '__main__':
