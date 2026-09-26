@@ -1,0 +1,393 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		067D520F4E147FA810433E96 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412E1C5EB4ABEF8CBB0357BF /* Models.swift */; };
+		19CFE975C6EC5B4F8A4663D9 /* YTAudioDownloaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CCB6DC10C94E4C2AEFF4D99 /* YTAudioDownloaderApp.swift */; };
+		557646A3D7C9BE1A8BE53702 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5EEF97F1849E8CAAD7BBACB /* ContentView.swift */; };
+		5D0E4B49CC0BBA469B265BB3 /* YTAudioDownloaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CCB6DC10C94E4C2AEFF4D99 /* YTAudioDownloaderApp.swift */; };
+		9CB0400F8D91949C7794F96A /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412E1C5EB4ABEF8CBB0357BF /* Models.swift */; };
+		9D4751B04B94F46DFD7DDF82 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5EEF97F1849E8CAAD7BBACB /* ContentView.swift */; };
+		A1B461FA2CA506FFA656C3D9 /* DownloaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CDB1908A04E62D040E665E1 /* DownloaderViewModel.swift */; };
+		EAF1303691A09116C3A6D12C /* DownloaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CDB1908A04E62D040E665E1 /* DownloaderViewModel.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		2CCB6DC10C94E4C2AEFF4D99 /* YTAudioDownloaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YTAudioDownloaderApp.swift; sourceTree = "<group>"; };
+		2CDB1908A04E62D040E665E1 /* DownloaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloaderViewModel.swift; sourceTree = "<group>"; };
+		33A89762A396759890F45178 /* YTAudioDownloader-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "YTAudioDownloader-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		412E1C5EB4ABEF8CBB0357BF /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
+		EE02D691C0A5AD78B0B35D9E /* YTAudioDownloader-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "YTAudioDownloader-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5EEF97F1849E8CAAD7BBACB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		31945319D6C76F8C70B3E8C7 = {
+			isa = PBXGroup;
+			children = (
+				3809A84D90E38DC390BAB1CF /* Shared */,
+				A1C228100E24C05C9B933268 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		3809A84D90E38DC390BAB1CF /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				F5EEF97F1849E8CAAD7BBACB /* ContentView.swift */,
+				2CDB1908A04E62D040E665E1 /* DownloaderViewModel.swift */,
+				412E1C5EB4ABEF8CBB0357BF /* Models.swift */,
+				2CCB6DC10C94E4C2AEFF4D99 /* YTAudioDownloaderApp.swift */,
+			);
+			name = Shared;
+			path = Sources/Shared;
+			sourceTree = "<group>";
+		};
+		A1C228100E24C05C9B933268 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				EE02D691C0A5AD78B0B35D9E /* YTAudioDownloader-iOS.app */,
+				33A89762A396759890F45178 /* YTAudioDownloader-macOS.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8682627D020F9C4F2363AFD2 /* YTAudioDownloader-iOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 35BA25223F81E207ABB91354 /* Build configuration list for PBXNativeTarget "YTAudioDownloader-iOS" */;
+			buildPhases = (
+				A7999EFACDDC9F74B28E27D6 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "YTAudioDownloader-iOS";
+			packageProductDependencies = (
+			);
+			productName = "YTAudioDownloader-iOS";
+			productReference = EE02D691C0A5AD78B0B35D9E /* YTAudioDownloader-iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		D777324713EC7AD9093F1084 /* YTAudioDownloader-macOS */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 9737AB0DB6F82A984F438C03 /* Build configuration list for PBXNativeTarget "YTAudioDownloader-macOS" */;
+			buildPhases = (
+				8F78480E87C95B9A6B92C6AA /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "YTAudioDownloader-macOS";
+			packageProductDependencies = (
+			);
+			productName = "YTAudioDownloader-macOS";
+			productReference = 33A89762A396759890F45178 /* YTAudioDownloader-macOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		0BE6F6547865A62B6CFE7A16 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					8682627D020F9C4F2363AFD2 = {
+						DevelopmentTeam = 6Z45F3A37G;
+						ProvisioningStyle = Automatic;
+					};
+					D777324713EC7AD9093F1084 = {
+						DevelopmentTeam = 6Z45F3A37G;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F18ED208B07B5E3F236526F5 /* Build configuration list for PBXProject "YTAudioDownloader" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = 31945319D6C76F8C70B3E8C7;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = A1C228100E24C05C9B933268 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				8682627D020F9C4F2363AFD2 /* YTAudioDownloader-iOS */,
+				D777324713EC7AD9093F1084 /* YTAudioDownloader-macOS */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8F78480E87C95B9A6B92C6AA /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				9D4751B04B94F46DFD7DDF82 /* ContentView.swift in Sources */,
+				EAF1303691A09116C3A6D12C /* DownloaderViewModel.swift in Sources */,
+				067D520F4E147FA810433E96 /* Models.swift in Sources */,
+				19CFE975C6EC5B4F8A4663D9 /* YTAudioDownloaderApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A7999EFACDDC9F74B28E27D6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				557646A3D7C9BE1A8BE53702 /* ContentView.swift in Sources */,
+				A1B461FA2CA506FFA656C3D9 /* DownloaderViewModel.swift in Sources */,
+				9CB0400F8D91949C7794F96A /* Models.swift in Sources */,
+				5D0E4B49CC0BBA469B265BB3 /* YTAudioDownloaderApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		0414DCFED803931FE2C234EF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "YT Audio";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.davidpoka.ytaudiodownloader.ios;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		16ED49DD1B827F5DBC970F5B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "YT Audio";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.davidpoka.ytaudiodownloader.mac;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		239571760A8D63C81347C525 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "YT Audio";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.davidpoka.ytaudiodownloader.ios;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		5563FFA3894701348FDEEC38 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 6Z45F3A37G;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Release;
+		};
+		6D1FCBC5804757ACC2BC9C76 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 6Z45F3A37G;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.9;
+			};
+			name = Debug;
+		};
+		D8BCDD91B51B2CF931E0F493 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				ENABLE_APP_SANDBOX = NO;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = "YT Audio";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.davidpoka.ytaudiodownloader.mac;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		35BA25223F81E207ABB91354 /* Build configuration list for PBXNativeTarget "YTAudioDownloader-iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				239571760A8D63C81347C525 /* Debug */,
+				0414DCFED803931FE2C234EF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		9737AB0DB6F82A984F438C03 /* Build configuration list for PBXNativeTarget "YTAudioDownloader-macOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D8BCDD91B51B2CF931E0F493 /* Debug */,
+				16ED49DD1B827F5DBC970F5B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		F18ED208B07B5E3F236526F5 /* Build configuration list for PBXProject "YTAudioDownloader" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6D1FCBC5804757ACC2BC9C76 /* Debug */,
+				5563FFA3894701348FDEEC38 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 0BE6F6547865A62B6CFE7A16 /* Project object */;
+}

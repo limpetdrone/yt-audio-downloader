@@ -1,0 +1,38 @@
+name: YTAudioDownloader
+options:
+  bundleIdPrefix: com.davidpoka
+  deploymentTarget:
+    iOS: "16.0"
+    macOS: "13.0"
+
+settings:
+  DEVELOPMENT_TEAM: 6Z45F3A37G
+  CODE_SIGN_STYLE: Automatic
+  SWIFT_VERSION: "5.9"
+
+targets:
+  YTAudioDownloader-iOS:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources/Shared
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.davidpoka.ytaudiodownloader.ios
+      INFOPLIST_KEY_CFBundleDisplayName: "YT Audio"
+      GENERATE_INFOPLIST_FILE: YES
+      CURRENT_PROJECT_VERSION: 1
+      MARKETING_VERSION: 1.0.0
+      TARGETED_DEVICE_FAMILY: "1,2"
+
+  YTAudioDownloader-macOS:
+    type: application
+    platform: macOS
+    sources:
+      - path: Sources/Shared
+    settings:
+      PRODUCT_BUNDLE_IDENTIFIER: com.davidpoka.ytaudiodownloader.mac
+      INFOPLIST_KEY_CFBundleDisplayName: "YT Audio"
+      GENERATE_INFOPLIST_FILE: YES
+      CURRENT_PROJECT_VERSION: 1
+      MARKETING_VERSION: 1.0.0
+      ENABLE_APP_SANDBOX: NO

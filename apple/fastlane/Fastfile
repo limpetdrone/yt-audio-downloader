@@ -1,0 +1,39 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Build and upload iOS app to TestFlight"
+  lane :beta do
+    increment_build_number(
+      xcodeproj: "YTAudioDownloader.xcodeproj"
+    ) rescue nil
+
+    build_app(
+      project: "YTAudioDownloader.xcodeproj",
+      scheme: "YTAudioDownloader-iOS",
+      export_method: "app-store",
+      clean: true
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      skip_submission: true
+    )
+  end
+end
+
+platform :mac do
+  desc "Build and upload macOS app to TestFlight"
+  lane :beta do
+    build_mac_app(
+      project: "YTAudioDownloader.xcodeproj",
+      scheme: "YTAudioDownloader-macOS",
+      export_method: "app-store",
+      clean: true
+    )
+
+    upload_to_testflight(
+      skip_waiting_for_build_processing: true,
+      skip_submission: true
+    )
+  end
+end

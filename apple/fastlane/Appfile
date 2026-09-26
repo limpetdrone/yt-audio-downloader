@@ -1,0 +1,4 @@
+app_identifier("com.davidpoka.ytaudiodownloader.ios")
+apple_id("poka.david@gmail.com") # Update with your Apple ID email if needed
+team_id("6Z45F3A37G")
+itc_team_id("6Z45F3A37G")
