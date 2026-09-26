@@ -16,14 +16,20 @@ import yt_dlp
 os.environ['SSL_CERT_FILE'] = certifi.where()
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 
-PORT = int(os.environ.get('PORT', 8000))
+PORT = int(os.environ.get('PORT', 10000))
 
 class DownloadHandler(BaseHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, GET, OPTIONS')
+        self.send_header('Access-Control-Allow-Methods', 'POST, GET, HEAD, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.end_headers()
+
+    def do_HEAD(self):
+        self.send_response(200)
+        self.send_header('Content-Type', 'application/json')
+        self.send_header('Access-Control-Allow-Origin', '*')
         self.end_headers()
 
     def do_GET(self):
@@ -73,11 +79,11 @@ class DownloadHandler(BaseHTTPRequestHandler):
                         'no_warnings': True,
                     }
 
-                    ffmpeg_path = shutil.which("ffmpeg") or "/opt/homebrew/bin/ffmpeg" or "/usr/bin/ffmpeg"
+                    ffmpeg_path = shutil.which("ffmpeg") or "/usr/bin/ffmpeg" or "/opt/homebrew/bin/ffmpeg"
                     if os.path.exists(ffmpeg_path):
                         ydl_opts['ffmpeg_location'] = os.path.dirname(ffmpeg_path)
 
-                    node_path = shutil.which("node") or "/opt/homebrew/bin/node" or "/usr/bin/node"
+                    node_path = shutil.which("node") or "/usr/bin/node" or "/opt/homebrew/bin/node"
                     if os.path.exists(node_path):
                         ydl_opts['js_runtimes'] = {'node': {'path': node_path}}
 
@@ -98,6 +104,7 @@ class DownloadHandler(BaseHTTPRequestHandler):
                     self.send_header('Content-Type', 'audio/mpeg')
                     self.send_header('Content-Length', str(file_size))
                     self.send_header('Access-Control-Allow-Origin', '*')
+                    self.send_header('Access-Control-Expose-Headers', 'X-Track-Title')
                     self.send_header('X-Track-Title', title.encode('ascii', 'ignore').decode('ascii'))
                     self.end_headers()
 
