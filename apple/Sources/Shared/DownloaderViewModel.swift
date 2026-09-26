@@ -16,6 +16,7 @@ public class DownloaderViewModel: ObservableObject {
     @Published public var activeVideoTrack: DownloadedTrack? = nil
     @Published public var serverUrl: String = UserDefaults.standard.string(forKey: "backend_server_url") ?? "https://francis-seeing-module-bolt.trycloudflare.com"
     @Published public var isServerConnected: Bool = false
+    private var currentMediaTitle: String = ""
 
     private var audioPlayer: AVAudioPlayer?
     private let storageKey = "SavedDownloadedTracks"
@@ -106,8 +107,8 @@ public class DownloaderViewModel: ObservableObject {
         }
 
         isDownloading = true
-        progress = 0.1
-        statusMessage = "Contacting download service..."
+        progress = 0.05
+        statusMessage = "Starting download..."
 
         Task {
             await executeDownload(for: trimmed)
@@ -125,8 +126,8 @@ public class DownloaderViewModel: ObservableObject {
     #if os(macOS)
     private func executeMacLocalDownload(for url: String) async {
         do {
-            statusMessage = "Extracting \(downloadType == .video ? "video" : "audio") with yt-dlp & FFmpeg..."
-            progress = 0.3
+            statusMessage = "Starting download..."
+            progress = 0.05
 
             let pythonPath = "/opt/homebrew/bin/python3"
             let isVideo = (downloadType == .video)
@@ -137,6 +138,10 @@ public class DownloaderViewModel: ObservableObject {
                 'key': 'FFmpegExtractAudio',
                 'preferredcodec': 'mp3',
                 'preferredquality': '\(selectedQuality.rawValue)',
+            },
+            {
+                'key': 'FFmpegMetadata',
+                'add_metadata': True,
             }]
             """
 
@@ -145,10 +150,23 @@ public class DownloaderViewModel: ObservableObject {
             let ytDlpScript = """
             import os, sys, certifi, yt_dlp
             os.environ['SSL_CERT_FILE'] = certifi.where()
+
+            def hook(d):
+                if d['status'] == 'downloading':
+                    total = d.get('total_bytes') or d.get('total_bytes_estimate') or 0
+                    dl = d.get('downloaded_bytes', 0)
+                    pct = (dl / total) if total else 0
+                    speed = (d.get('speed') or 0) / (1024 * 1024)
+                    eta = d.get('eta') or 0
+                    print(f"PROGRESS:{pct:.3f}:{speed:.1f}:{int(eta)}", flush=True)
+                elif d['status'] == 'finished':
+                    print("STAGE:CONVERTING", flush=True)
+
             ydl_opts = {
                 'format': '\(formatSpec)',
                 'outtmpl': '\(outtmpl)',
                 'nocheckcertificate': True,
+                'progress_hooks': [hook],
                 'postprocessors': \(postproc),
                 'quiet': True,
                 'ffmpeg_location': '/opt/homebrew/bin',
@@ -156,7 +174,7 @@ public class DownloaderViewModel: ObservableObject {
             }
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                 info = ydl.extract_info('\(url)', download=True)
-                print(info.get('title', 'Media Item'))
+                print(f"TITLE:{info.get('title', 'Media Item')}", flush=True)
             """
 
             let process = Process()
@@ -165,29 +183,55 @@ public class DownloaderViewModel: ObservableObject {
 
             let pipe = Pipe()
             process.standardOutput = pipe
-            process.standardError = pipe
+            currentMediaTitle = ""
+
+            pipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
+                let data = handle.availableData
+                guard !data.isEmpty, let text = String(data: data, encoding: .utf8) else { return }
+                let lines = text.components(separatedBy: .newlines)
+                for line in lines {
+                    let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if trimmed.hasPrefix("PROGRESS:") {
+                        let parts = trimmed.components(separatedBy: ":")
+                        if parts.count >= 4,
+                           let pct = Double(parts[1]),
+                           let speed = Double(parts[2]),
+                           let eta = Int(parts[3]) {
+                            Task { @MainActor [weak self] in
+                                self?.progress = min(0.90, max(0.05, pct * 0.88))
+                                self?.statusMessage = String(format: "Downloading: %.1f%% • %.1f MB/s • %ds remaining", pct * 100, speed, eta)
+                            }
+                        }
+                    } else if trimmed.hasPrefix("STAGE:CONVERTING") {
+                        Task { @MainActor [weak self] in
+                            self?.progress = 0.92
+                            self?.statusMessage = "Finalizing & converting with FFmpeg..."
+                        }
+                    } else if trimmed.hasPrefix("TITLE:") {
+                        let t = String(trimmed.dropFirst(6))
+                        Task { @MainActor [weak self] in
+                            self?.currentMediaTitle = t
+                        }
+                    }
+                }
+            }
 
             try process.run()
-            self.progress = 0.7
-            self.statusMessage = isVideo ? "Merging video & audio..." : "Converting to MP3 (FFmpeg)..."
-
             process.waitUntilExit()
-
-            let data = pipe.fileHandleForReading.readDataToEndOfFile()
-            let output = String(data: data, encoding: .utf8)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            pipe.fileHandleForReading.readabilityHandler = nil
 
             if process.terminationStatus == 0 {
-                let title = output.components(separatedBy: .newlines).last ?? "Downloaded Item"
+                let finalTitle = currentMediaTitle.isEmpty ? (isVideo ? "Video" : "Audio") : currentMediaTitle
                 let ext = isVideo ? "mp4" : "mp3"
-                let fileName = "\(title).\(ext)"
-                let newTrack = DownloadedTrack(title: title, fileName: fileName, quality: selectedQuality.rawValue, isVideo: isVideo)
+                let fileName = "\(finalTitle).\(ext)"
+                let newTrack = DownloadedTrack(title: finalTitle, fileName: fileName, quality: selectedQuality.rawValue, isVideo: isVideo)
                 self.tracks.insert(newTrack, at: 0)
                 self.saveTracks()
 
                 self.progress = 1.0
-                self.statusMessage = "✅ Successfully downloaded: \(title)"
+                self.statusMessage = "✅ Successfully downloaded: \(finalTitle)"
             } else {
-                self.statusMessage = "❌ Download error: \(output)"
+                self.statusMessage = "❌ Download error occurred."
             }
         } catch {
             self.statusMessage = "❌ Error: \(error.localizedDescription)"
@@ -198,17 +242,17 @@ public class DownloaderViewModel: ObservableObject {
 
     private func executeRemoteDownload(for url: String) async {
         let trimmedServer = serverUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-        let endpointString = trimmedServer.hasSuffix("/") ? "\(trimmedServer)download" : "\(trimmedServer)/download"
-        guard let endpoint = URL(string: endpointString) else {
-            statusMessage = "Invalid Server URL. Check Server Settings."
+        let base = trimmedServer.hasSuffix("/") ? String(trimmedServer.dropLast()) : trimmedServer
+        guard let startUrl = URL(string: "\(base)/download/start") else {
+            statusMessage = "Invalid Server URL."
             isDownloading = false
             return
         }
 
-        var request = URLRequest(url: endpoint)
+        var request = URLRequest(url: startUrl)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 240
+        request.timeoutInterval = 30
 
         let payload: [String: String] = [
             "url": url,
@@ -218,25 +262,75 @@ public class DownloaderViewModel: ObservableObject {
 
         do {
             request.httpBody = try JSONSerialization.data(withJSONObject: payload)
-            statusMessage = downloadType == .video ? "Downloading video from YouTube..." : "Converting audio to MP3..."
-            progress = 0.4
+            statusMessage = "Starting download job..."
+            progress = 0.05
 
             let (data, response) = try await URLSession.shared.data(for: request)
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 {
-                let trackTitle = httpResponse.value(forHTTPHeaderField: "X-Track-Title") ?? "Media_\(Int(Date().timeIntervalSince1970))"
-                let isVideoResp = (httpResponse.value(forHTTPHeaderField: "X-Media-Type") == "video")
-                    || (httpResponse.value(forHTTPHeaderField: "Content-Type")?.contains("video") == true)
-                    || (downloadType == .video)
+            guard let http = response as? HTTPURLResponse, http.statusCode == 200,
+                  let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                  let jobId = json["job_id"] as? String else {
+                statusMessage = "❌ Failed to start download job on server."
+                isDownloading = false
+                return
+            }
 
-                let sanitizedTitle = trackTitle.replacingOccurrences(of: "/", with: "-")
+            // Poll progress from server
+            var isFinished = false
+            var downloadTitle = "Media"
+            var isVideoResp = (downloadType == .video)
+
+            while !isFinished {
+                try await Task.sleep(nanoseconds: 500_000_000) // 500ms poll
+                guard let pollUrl = URL(string: "\(base)/download/progress?id=\(jobId)") else { break }
+
+                do {
+                    let (pollData, pollResp) = try await URLSession.shared.data(from: pollUrl)
+                    if let pollHttp = pollResp as? HTTPURLResponse, pollHttp.statusCode == 200,
+                       let pollJson = try? JSONSerialization.jsonObject(with: pollData) as? [String: Any] {
+                        let status = pollJson["status"] as? String ?? ""
+                        let jobProgress = pollJson["progress"] as? Double ?? 0.0
+                        let jobMsg = pollJson["message"] as? String ?? "Processing..."
+                        let title = pollJson["title"] as? String ?? ""
+                        if !title.isEmpty { downloadTitle = title }
+
+                        self.progress = jobProgress
+                        self.statusMessage = jobMsg
+
+                        if status == "ready" {
+                            isFinished = true
+                            isVideoResp = (pollJson["media_type"] as? String == "video")
+                            break
+                        } else if status == "error" {
+                            let err = pollJson["error"] as? String ?? "Unknown error"
+                            self.statusMessage = "❌ \(err)"
+                            self.isDownloading = false
+                            return
+                        }
+                    }
+                } catch {
+                    // Transient poll error, continue polling
+                }
+            }
+
+            // Retrieve file
+            self.statusMessage = "Transferring file to device..."
+            self.progress = 0.95
+            guard let fileUrl = URL(string: "\(base)/download/file?id=\(jobId)") else {
+                isDownloading = false
+                return
+            }
+
+            let (fileData, fileResp) = try await URLSession.shared.data(from: fileUrl)
+            if let fileHttp = fileResp as? HTTPURLResponse, fileHttp.statusCode == 200 {
+                let sanitizedTitle = downloadTitle.replacingOccurrences(of: "/", with: "-")
                 let ext = isVideoResp ? "mp4" : "mp3"
                 let fileName = "\(sanitizedTitle).\(ext)"
                 let destination = saveDirectory.appendingPathComponent(fileName)
 
-                try data.write(to: destination)
+                try fileData.write(to: destination)
 
                 let newTrack = DownloadedTrack(
-                    title: trackTitle,
+                    title: downloadTitle,
                     fileName: fileName,
                     quality: selectedQuality.rawValue,
                     isVideo: isVideoResp
@@ -245,13 +339,14 @@ public class DownloaderViewModel: ObservableObject {
                 self.saveTracks()
 
                 progress = 1.0
-                statusMessage = "✅ Download complete: \(trackTitle)"
+                statusMessage = "✅ Download complete: \(downloadTitle)"
                 isServerConnected = true
             } else {
-                statusMessage = "❌ Server returned status \((response as? HTTPURLResponse)?.statusCode ?? 500)"
+                statusMessage = "❌ Failed to retrieve downloaded file."
             }
+
         } catch {
-            statusMessage = "❌ Server unreachable. Please check connection."
+            statusMessage = "❌ Server error: \(error.localizedDescription)"
             isServerConnected = false
         }
         isDownloading = false
