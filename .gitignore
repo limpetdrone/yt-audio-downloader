@@ -21,3 +21,6 @@ __pycache__/
 # IDEs
 .idea/
 .vscode/
+
+# Local tunnel settings
+tunnel.conf

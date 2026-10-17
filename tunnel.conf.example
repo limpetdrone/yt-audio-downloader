@@ -1,0 +1,15 @@
+# Copy this file to tunnel.conf and fill in ONE of the options below.
+# tunnel.conf is ignored by git, so your settings stay on your Mac.
+
+# Option A: ngrok free static domain (no own domain needed)
+#   1. Sign up at https://ngrok.com (free)
+#   2. brew install ngrok && ngrok config add-authtoken <your token>
+#   3. Dashboard > Domains: claim your free static domain
+NGROK_DOMAIN=""            # e.g. "something-something.ngrok-free.app"
+
+# Option B: Cloudflare named tunnel (needs your own domain on Cloudflare)
+#   cloudflared tunnel login
+#   cloudflared tunnel create yt-downloader
+#   cloudflared tunnel route dns yt-downloader yt.example.com
+CF_TUNNEL_NAME=""          # e.g. "yt-downloader"
+CF_HOSTNAME=""             # e.g. "yt.example.com"
