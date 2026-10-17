@@ -1,11 +1,16 @@
-# Copy this file to tunnel.conf and fill in ONE of the options below.
+# Copy this file to tunnel.conf and fill in ONE of the tunnel options below.
 # tunnel.conf is ignored by git, so your settings stay on your Mac.
+# (The Mac app can do all of this itself: see "iPhone Access" in the app.)
+
+# Secret key the app must send with every request.
+# Leave empty and start_tunnel.command creates one on first run.
+API_KEY=""
 
 # Option A: ngrok free static domain (no own domain needed)
 #   1. Sign up at https://ngrok.com (free)
 #   2. brew install ngrok && ngrok config add-authtoken <your token>
-#   3. Dashboard > Domains: claim your free static domain
-NGROK_DOMAIN=""            # e.g. "something-something.ngrok-free.app"
+#   3. Dashboard > Domains: your free static domain
+NGROK_DOMAIN=""            # e.g. "something-something.ngrok-free.dev"
 
 # Option B: Cloudflare named tunnel (needs your own domain on Cloudflare)
 #   cloudflared tunnel login

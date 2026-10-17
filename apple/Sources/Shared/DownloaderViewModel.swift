@@ -14,8 +14,12 @@ public class DownloaderViewModel: ObservableObject {
     @Published public var currentlyPlayingID: UUID? = nil
     @Published public var isPlaying: Bool = false
     @Published public var activeVideoTrack: DownloadedTrack? = nil
-    @Published public var serverUrl: String = UserDefaults.standard.string(forKey: "backend_server_url") ?? "https://francis-seeing-module-bolt.trycloudflare.com"
+    @Published public var serverUrl: String = UserDefaults.standard.string(forKey: "backend_server_url") ?? DownloaderViewModel.defaultServerUrl
+    @Published public var apiKey: String = UserDefaults.standard.string(forKey: "backend_api_key") ?? ""
     @Published public var isServerConnected: Bool = false
+    @Published public var serverStatusText: String = "Connecting..."
+
+    public static let defaultServerUrl = "https://scouring-portable-extenuate.ngrok-free.dev"
     private var currentMediaTitle: String = ""
 
     private var audioPlayer: AVAudioPlayer?
@@ -53,32 +57,61 @@ public class DownloaderViewModel: ObservableObject {
         saveDirectory.appendingPathComponent(track.fileName)
     }
 
-    public func updateServerUrl(_ newUrl: String) {
+    public func updateServerSettings(url newUrl: String, key newKey: String) {
         let cleaned = newUrl.trimmingCharacters(in: .whitespacesAndNewlines)
+        let cleanedKey = newKey.trimmingCharacters(in: .whitespacesAndNewlines)
         self.serverUrl = cleaned
+        self.apiKey = cleanedKey
         UserDefaults.standard.set(cleaned, forKey: "backend_server_url")
+        UserDefaults.standard.set(cleanedKey, forKey: "backend_api_key")
         Task {
             await checkServerHealth()
         }
     }
 
-    public func checkServerHealth() async {
+    /// Handles ytdownloader://connect?url=...&key=... (the QR code shown by the Mac app).
+    @discardableResult
+    public func applyPairingLink(_ link: URL) -> Bool {
+        guard link.scheme == "ytdownloader", link.host == "connect",
+              let items = URLComponents(url: link, resolvingAgainstBaseURL: false)?.queryItems,
+              let url = items.first(where: { $0.name == "url" })?.value,
+              let key = items.first(where: { $0.name == "key" })?.value,
+              url.hasPrefix("https://") else {
+            return false
+        }
+        updateServerSettings(url: url, key: key)
+        statusMessage = "Connected to your Mac server."
+        return true
+    }
+
+    private var serverBase: String {
         let trimmed = serverUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let url = URL(string: trimmed.hasSuffix("/") ? "\(trimmed)health" : "\(trimmed)/health") else {
+        return trimmed.hasSuffix("/") ? String(trimmed.dropLast()) : trimmed
+    }
+
+    /// Request to the Mac server with the secret key attached.
+    private func serverRequest(_ url: URL, timeout: TimeInterval = 30) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.timeoutInterval = timeout
+        request.setValue(apiKey, forHTTPHeaderField: "X-API-Key")
+        request.setValue("1", forHTTPHeaderField: "ngrok-skip-browser-warning")
+        return request
+    }
+
+    public func checkServerHealth() async {
+        guard let url = URL(string: "\(serverBase)/health") else {
             isServerConnected = false
+            serverStatusText = "Invalid address"
             return
         }
         do {
-            var request = URLRequest(url: url)
-            request.timeoutInterval = 8
-            let (_, response) = try await URLSession.shared.data(for: request)
-            if let http = response as? HTTPURLResponse, http.statusCode == 200 {
-                isServerConnected = true
-            } else {
-                isServerConnected = false
-            }
+            let (_, response) = try await URLSession.shared.data(for: serverRequest(url, timeout: 8))
+            let code = (response as? HTTPURLResponse)?.statusCode ?? 0
+            isServerConnected = (code == 200)
+            serverStatusText = code == 200 ? "Online" : (code == 401 ? "Wrong key" : "Offline")
         } catch {
             isServerConnected = false
+            serverStatusText = "Offline"
         }
     }
 
@@ -129,7 +162,11 @@ public class DownloaderViewModel: ObservableObject {
             statusMessage = "Starting download..."
             progress = 0.05
 
-            let pythonPath = "/opt/homebrew/bin/python3"
+            guard let pythonPath = Tools.python else {
+                statusMessage = "❌ Python 3 not found. Install it with: brew install python"
+                isDownloading = false
+                return
+            }
             let isVideo = (downloadType == .video)
             let outtmpl = isVideo ? "\(saveDirectory.path)/%(title)s.mp4" : "\(saveDirectory.path)/%(title)s.%(ext)s"
 
@@ -150,6 +187,7 @@ public class DownloaderViewModel: ObservableObject {
             let ytDlpScript = """
             import os, sys, certifi, yt_dlp
             os.environ['SSL_CERT_FILE'] = certifi.where()
+            video_url, outtmpl, ffmpeg_dir, node_path = sys.argv[1:5]
 
             def hook(d):
                 if d['status'] == 'downloading':
@@ -164,22 +202,28 @@ public class DownloaderViewModel: ObservableObject {
 
             ydl_opts = {
                 'format': '\(formatSpec)',
-                'outtmpl': '\(outtmpl)',
+                'outtmpl': outtmpl,
                 'nocheckcertificate': True,
                 'progress_hooks': [hook],
                 'postprocessors': \(postproc),
                 'quiet': True,
-                'ffmpeg_location': '/opt/homebrew/bin',
-                'js_runtimes': {'node': {'path': '/opt/homebrew/bin/node'}}
             }
+            if ffmpeg_dir:
+                ydl_opts['ffmpeg_location'] = ffmpeg_dir
+            if node_path:
+                ydl_opts['js_runtimes'] = {'node': {'path': node_path}}
             with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                info = ydl.extract_info('\(url)', download=True)
+                info = ydl.extract_info(video_url, download=True)
                 print(f"TITLE:{info.get('title', 'Media Item')}", flush=True)
             """
 
             let process = Process()
             process.executableURL = URL(fileURLWithPath: pythonPath)
-            process.arguments = ["-c", ytDlpScript]
+            // URL and paths go in as arguments, never pasted into the script.
+            process.arguments = ["-c", ytDlpScript, url, outtmpl, Tools.ffmpegDir ?? "", Tools.node ?? ""]
+            var env = ProcessInfo.processInfo.environment
+            env["PATH"] = Tools.searchPath
+            process.environment = env
 
             let pipe = Pipe()
             process.standardOutput = pipe
@@ -241,18 +285,16 @@ public class DownloaderViewModel: ObservableObject {
     #endif
 
     private func executeRemoteDownload(for url: String) async {
-        let trimmedServer = serverUrl.trimmingCharacters(in: .whitespacesAndNewlines)
-        let base = trimmedServer.hasSuffix("/") ? String(trimmedServer.dropLast()) : trimmedServer
+        let base = serverBase
         guard let startUrl = URL(string: "\(base)/download/start") else {
             statusMessage = "Invalid Server URL."
             isDownloading = false
             return
         }
 
-        var request = URLRequest(url: startUrl)
+        var request = serverRequest(startUrl)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.timeoutInterval = 30
 
         let payload: [String: String] = [
             "url": url,
@@ -266,6 +308,13 @@ public class DownloaderViewModel: ObservableObject {
             progress = 0.05
 
             let (data, response) = try await URLSession.shared.data(for: request)
+            if (response as? HTTPURLResponse)?.statusCode == 401 {
+                statusMessage = "❌ Wrong server key. Check it in Server Connection."
+                serverStatusText = "Wrong key"
+                isServerConnected = false
+                isDownloading = false
+                return
+            }
             guard let http = response as? HTTPURLResponse, http.statusCode == 200,
                   let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                   let jobId = json["job_id"] as? String else {
@@ -284,7 +333,7 @@ public class DownloaderViewModel: ObservableObject {
                 guard let pollUrl = URL(string: "\(base)/download/progress?id=\(jobId)") else { break }
 
                 do {
-                    let (pollData, pollResp) = try await URLSession.shared.data(from: pollUrl)
+                    let (pollData, pollResp) = try await URLSession.shared.data(for: serverRequest(pollUrl))
                     if let pollHttp = pollResp as? HTTPURLResponse, pollHttp.statusCode == 200,
                        let pollJson = try? JSONSerialization.jsonObject(with: pollData) as? [String: Any] {
                         let status = pollJson["status"] as? String ?? ""
@@ -320,7 +369,7 @@ public class DownloaderViewModel: ObservableObject {
                 return
             }
 
-            let (fileData, fileResp) = try await URLSession.shared.data(from: fileUrl)
+            let (fileData, fileResp) = try await URLSession.shared.data(for: serverRequest(fileUrl, timeout: 300))
             if let fileHttp = fileResp as? HTTPURLResponse, fileHttp.statusCode == 200 {
                 let sanitizedTitle = downloadTitle.replacingOccurrences(of: "/", with: "-")
                 let ext = isVideoResp ? "mp4" : "mp3"
@@ -341,6 +390,7 @@ public class DownloaderViewModel: ObservableObject {
                 progress = 1.0
                 statusMessage = "✅ Download complete: \(downloadTitle)"
                 isServerConnected = true
+                serverStatusText = "Online"
             } else {
                 statusMessage = "❌ Failed to retrieve downloaded file."
             }
@@ -348,6 +398,7 @@ public class DownloaderViewModel: ObservableObject {
         } catch {
             statusMessage = "❌ Server error: \(error.localizedDescription)"
             isServerConnected = false
+            serverStatusText = "Offline"
         }
         isDownloading = false
     }

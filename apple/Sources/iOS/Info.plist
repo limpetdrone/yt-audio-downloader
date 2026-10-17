@@ -18,5 +18,16 @@
 	<string>1.0</string>
 	<key>CFBundleVersion</key>
 	<string>1</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.davidpoka.ytaudiodownloader.connect</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>ytdownloader</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

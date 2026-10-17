@@ -10,5 +10,18 @@
     <true/>
     <key>com.apple.security.files.downloads.read-write</key>
     <true/>
+    <key>com.apple.security.network.server</key>
+    <true/>
+    <key>com.apple.security.temporary-exception.files.absolute-path.read-only</key>
+    <array>
+        <string>/opt/homebrew/</string>
+        <string>/usr/local/</string>
+        <string>/Library/Frameworks/Python.framework/</string>
+    </array>
+    <key>com.apple.security.temporary-exception.files.home-relative-path.read-only</key>
+    <array>
+        <string>/Library/Python/</string>
+        <string>/Library/Application Support/ngrok/</string>
+    </array>
 </dict>
 </plist>

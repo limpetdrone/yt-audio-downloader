@@ -5,6 +5,10 @@ import AVKit
 public struct ContentView: View {
     @StateObject private var viewModel = DownloaderViewModel()
     @State private var serverUrlDraft: String = ""
+    @State private var apiKeyDraft: String = ""
+    #if os(macOS)
+    @StateObject private var server = ServerManager()
+    #endif
     @State private var showServerSettings: Bool = false
 
     public init() {}
@@ -89,19 +93,24 @@ public struct ContentView: View {
                 Section("Server Connection") {
                     DisclosureGroup(isExpanded: $showServerSettings) {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("Connected to your Mac backend via secure Cloudflare Tunnel.")
+                            Text("Downloads run on your Mac through a secure tunnel. Scan the QR code in the Mac app with the iPhone camera, or enter the address and key here.")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
 
+                            TextField(DownloaderViewModel.defaultServerUrl, text: $serverUrlDraft)
+                                .textFieldStyle(.roundedBorder)
+                                .keyboardType(.URL)
+                                .autocapitalization(.none)
+                                .disableAutocorrection(true)
+
                             HStack {
-                                TextField("https://francis-seeing-module-bolt.trycloudflare.com", text: $serverUrlDraft)
+                                SecureField("Key (shown in the Mac app)", text: $apiKeyDraft)
                                     .textFieldStyle(.roundedBorder)
-                                    .keyboardType(.URL)
                                     .autocapitalization(.none)
                                     .disableAutocorrection(true)
 
                                 Button("Save") {
-                                    viewModel.updateServerUrl(serverUrlDraft)
+                                    viewModel.updateServerSettings(url: serverUrlDraft, key: apiKeyDraft)
                                 }
                                 .buttonStyle(.bordered)
                             }
@@ -128,13 +137,17 @@ public struct ContentView: View {
                                 Circle()
                                     .fill(viewModel.isServerConnected ? Color.green : Color.orange)
                                     .frame(width: 8, height: 8)
-                                Text(viewModel.isServerConnected ? "Online" : "Connecting...")
+                                Text(viewModel.serverStatusText)
                                     .font(.caption)
                                     .foregroundColor(viewModel.isServerConnected ? .green : .orange)
                             }
                         }
                     }
                 }
+                #endif
+
+                #if os(macOS)
+                MacServerSection(server: server)
                 #endif
 
                 // Section 5: Downloaded Tracks / Videos Library
@@ -215,8 +228,16 @@ public struct ContentView: View {
             .navigationTitle("YT Downloader")
             .onAppear {
                 serverUrlDraft = viewModel.serverUrl
+                apiKeyDraft = viewModel.apiKey
                 Task {
                     await viewModel.checkServerHealth()
+                }
+            }
+            .onOpenURL { link in
+                if viewModel.applyPairingLink(link) {
+                    serverUrlDraft = viewModel.serverUrl
+                    apiKeyDraft = viewModel.apiKey
+                    showServerSettings = true
                 }
             }
             .sheet(item: $viewModel.activeVideoTrack) { track in

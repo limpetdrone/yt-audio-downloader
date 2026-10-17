@@ -26,23 +26,36 @@ Simply double-click `start.command`.
 - FFmpeg (`brew install ffmpeg`)
 - Node.js (`brew install node`)
 
-## iPhone app: backend + tunnel
+## iPhone app: download through your Mac
 
-The iPhone app downloads through `server.py` running on your Mac. Start it with
-`start_tunnel.command` (double-click in Finder). The script creates the Python
-environment on first run, starts the backend, checks it answers, then opens a tunnel.
+The iPhone app downloads through `server.py` running on your Mac, reachable over a
+secure ngrok address. Every request must carry a secret key (`X-API-Key` header),
+otherwise the server answers 401. The server only listens on localhost; ngrok forwards to it.
 
-### Permanent server address
+### Easiest: the Mac app does it
 
-By default the tunnel is a temporary `trycloudflare.com` address that changes on
-every run (the script prints it and copies it to the clipboard). To get an address
-that never changes, so you only enter it in the app once:
+1. Sign up at ngrok.com (free), install it with `brew install ngrok`, and copy your
+   authtoken and free static domain from the ngrok dashboard.
+2. In the Mac app, open **iPhone Access**, paste the authtoken and domain, and press
+   **Start Sharing**. Turn on "Start automatically" if you like.
+3. Scan the QR code with the iPhone camera. The iPhone app opens and saves the
+   address and key.
 
-1. Copy `tunnel.conf.example` to `tunnel.conf`.
-2. Fill in one option:
-   - **ngrok** (free, no own domain needed): sign up at ngrok.com, run
-     `brew install ngrok && ngrok config add-authtoken <token>`, claim the free
-     static domain in the ngrok dashboard, and put it in `NGROK_DOMAIN`.
-   - **Cloudflare named tunnel** (needs your own domain on Cloudflare): set
-     `CF_TUNNEL_NAME` and `CF_HOSTNAME` (setup commands are in the example file).
-3. Run `start_tunnel.command`, paste the printed address into the app once and press Save.
+The Mac app needs Python 3 with `yt-dlp` and `certifi` installed
+(`python3 -m pip install yt-dlp certifi`), plus `ffmpeg` and `node` from Homebrew.
+
+### Without the Mac app: start_tunnel.command
+
+Double-click `start_tunnel.command`. It creates the Python environment on first run,
+creates a key in `tunnel.conf`, starts the backend, checks it answers, then opens a
+tunnel and prints the address and key to enter in the iPhone app.
+
+For an address that never changes, copy `tunnel.conf.example` to `tunnel.conf` and set
+`NGROK_DOMAIN` (or a Cloudflare named tunnel). Without it, a temporary
+`trycloudflare.com` address is used, which changes on every run.
+
+### Building
+
+`apple/upload_to_testflight.sh` regenerates the Xcode project with XcodeGen (needed,
+because new files like `ServerManager.swift` and the bundled `server.py` are listed in
+`project.yml`), then archives and uploads both apps.

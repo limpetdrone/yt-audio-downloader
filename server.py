@@ -10,9 +10,11 @@ import json
 import shutil
 import tempfile
 import uuid
+import hmac
+import secrets
 import threading
 import urllib.parse
-from http.server import HTTPServer, BaseHTTPRequestHandler
+from http.server import ThreadingHTTPServer, BaseHTTPRequestHandler
 import certifi
 import yt_dlp
 
@@ -20,6 +22,14 @@ os.environ['SSL_CERT_FILE'] = certifi.where()
 os.environ['REQUESTS_CA_BUNDLE'] = certifi.where()
 
 PORT = int(os.environ.get('PORT', 8000))
+HOST = os.environ.get('HOST', '0.0.0.0')
+
+# Every request must carry this key in the X-API-Key header.
+# If none is configured, a random one is generated for this run.
+API_KEY = os.environ.get('API_KEY', '').strip()
+if not API_KEY:
+    API_KEY = secrets.token_urlsafe(24)
+    print(f"[Backend] No API_KEY set. Generated key for this run: {API_KEY}")
 
 # Active download jobs
 jobs = {}
@@ -99,6 +109,7 @@ def run_download_job(job_id, video_url, quality, media_type):
         matched_files = [f for f in os.listdir(tmpdir) if f.endswith(ext)]
         if not matched_files:
             jobs[job_id].update({'status': 'error', 'error': f"{ext.upper()} file generation failed"})
+            shutil.rmtree(tmpdir, ignore_errors=True)
             return
 
         file_path = os.path.join(tmpdir, matched_files[0])
@@ -120,14 +131,33 @@ def run_download_job(job_id, video_url, quality, media_type):
         err_msg = str(e)
         print(f"[Backend] Job {job_id} error: {err_msg}")
         jobs[job_id].update({'status': 'error', 'error': err_msg, 'message': f"Error: {err_msg}"})
+        shutil.rmtree(tmpdir, ignore_errors=True)
+
+
+def cleanup_job(job_id):
+    """Delete a finished job's temporary files once the file has been sent."""
+    tmpdir = job_dirs.pop(job_id, None)
+    jobs.pop(job_id, None)
+    if tmpdir:
+        shutil.rmtree(tmpdir, ignore_errors=True)
 
 
 class DownloadHandler(BaseHTTPRequestHandler):
+    def is_authorized(self):
+        given = self.headers.get('X-API-Key', '')
+        return hmac.compare_digest(given.encode('utf-8'), API_KEY.encode('utf-8'))
+
+    def reject_unauthorized(self):
+        self.send_response(401)
+        self.send_header('Content-Type', 'application/json')
+        self.end_headers()
+        self.wfile.write(json.dumps({"error": "Invalid or missing API key"}).encode('utf-8'))
+
     def do_OPTIONS(self):
         self.send_response(200)
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, GET, HEAD, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
+        self.send_header('Access-Control-Allow-Headers', 'Content-Type, X-API-Key')
         self.end_headers()
 
     def do_HEAD(self):
@@ -137,6 +167,10 @@ class DownloadHandler(BaseHTTPRequestHandler):
         self.end_headers()
 
     def do_GET(self):
+        if not self.is_authorized():
+            self.reject_unauthorized()
+            return
+
         parsed = urllib.parse.urlparse(self.path)
         path = parsed.path
         query = urllib.parse.parse_qs(parsed.query)
@@ -201,14 +235,21 @@ class DownloadHandler(BaseHTTPRequestHandler):
             self.send_header('X-Media-Type', media_type)
             self.end_headers()
 
-            with open(file_path, 'rb') as f:
-                shutil.copyfileobj(f, self.wfile)
+            try:
+                with open(file_path, 'rb') as f:
+                    shutil.copyfileobj(f, self.wfile)
+            finally:
+                cleanup_job(job_id)
 
         else:
             self.send_response(404)
             self.end_headers()
 
     def do_POST(self):
+        if not self.is_authorized():
+            self.reject_unauthorized()
+            return
+
         if self.path == '/download/start':
             content_length = int(self.headers.get('Content-Length', 0))
             body = self.rfile.read(content_length)
@@ -290,8 +331,11 @@ class DownloadHandler(BaseHTTPRequestHandler):
                 self.send_header('X-Media-Type', media_type)
                 self.end_headers()
 
-                with open(file_path, 'rb') as f:
-                    shutil.copyfileobj(f, self.wfile)
+                try:
+                    with open(file_path, 'rb') as f:
+                        shutil.copyfileobj(f, self.wfile)
+                finally:
+                    cleanup_job(job_id)
 
             except Exception as e:
                 self.send_response(500)
@@ -304,8 +348,8 @@ class DownloadHandler(BaseHTTPRequestHandler):
             self.end_headers()
 
 def run():
-    server = HTTPServer(('0.0.0.0', PORT), DownloadHandler)
-    print(f"🎵 YT Audio Cloud Backend running on http://0.0.0.0:{PORT}")
+    server = ThreadingHTTPServer((HOST, PORT), DownloadHandler)
+    print(f"🎵 YT Audio Cloud Backend running on http://{HOST}:{PORT}", flush=True)
     server.serve_forever()
 
 if __name__ == '__main__':

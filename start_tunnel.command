@@ -13,7 +13,19 @@ PORT=8000
 NGROK_DOMAIN=""
 CF_TUNNEL_NAME=""
 CF_HOSTNAME=""
+API_KEY=""
 [ -f "$DIR/tunnel.conf" ] && source "$DIR/tunnel.conf"
+
+# Every request from the app must carry this key. Create one on first run.
+if [ -z "$API_KEY" ]; then
+    API_KEY=$(python3 -c 'import secrets; print(secrets.token_urlsafe(24))')
+    printf '\n# Secret key the app must send (enter it in the app)\nAPI_KEY="%s"\n' "$API_KEY" >> "$DIR/tunnel.conf"
+    echo "🔑 Created a new API key and saved it in tunnel.conf"
+fi
+export API_KEY
+# Only accept connections from this Mac; the tunnel forwards the rest.
+export HOST=127.0.0.1
+export PORT
 
 echo "========================================================"
 echo "  🎵 Starting YouTube Audio Downloader Backend + Tunnel "
@@ -45,16 +57,20 @@ fi
 cleanup() { [ -n "$BACKEND_PID" ] && kill "$BACKEND_PID" 2>/dev/null; }
 trap cleanup EXIT
 
-if ! curl -fs "http://localhost:$PORT/health" > /dev/null; then
+if ! curl -fs -H "X-API-Key: $API_KEY" "http://localhost:$PORT/health" > /dev/null; then
     echo "❌ Backend is not answering on http://localhost:$PORT/health"
     exit 1
 fi
 
 show_url() {
     echo "--------------------------------------------------------"
-    echo "👉 Server address for the iPhone app:"
+    echo "👉 Enter these in the iPhone app:"
     echo ""
     echo "     $1"
+    echo ""
+    echo "   API key:"
+    echo ""
+    echo "     $API_KEY"
     echo ""
     echo "--------------------------------------------------------"
 }
@@ -74,7 +90,7 @@ elif [ -n "$CF_TUNNEL_NAME" ]; then
 else
     command -v cloudflared > /dev/null || { echo "❌ cloudflared not found. Install it with: brew install cloudflared"; exit 1; }
     echo "[2/2] Starting temporary Cloudflare tunnel..."
-    echo "⚠️  This address changes on every run. Create tunnel.conf for a permanent one."
+    echo "⚠️  This address changes on every run. Set NGROK_DOMAIN in tunnel.conf for a permanent one."
     cloudflared tunnel --url "http://localhost:$PORT" 2>&1 | while IFS= read -r line; do
         case "$line" in *ERR*) echo "$line" ;; esac
         url=$(echo "$line" | grep -oE 'https://[a-z0-9-]+\.trycloudflare\.com' | grep -v '://api\.')
