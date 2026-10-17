@@ -9,23 +9,27 @@
 /* Begin PBXBuildFile section */
 		067D520F4E147FA810433E96 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412E1C5EB4ABEF8CBB0357BF /* Models.swift */; };
 		19CFE975C6EC5B4F8A4663D9 /* YTAudioDownloaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CCB6DC10C94E4C2AEFF4D99 /* YTAudioDownloaderApp.swift */; };
+		23EC3CA619E39F9D1BA1C41A /* ServerManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CA5759DF70B89C04CA79EE2A /* ServerManager.swift */; };
 		3472FE8E72193A65D156E62C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36BEAB637B0542992E10BFED /* Assets.xcassets */; };
 		557646A3D7C9BE1A8BE53702 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5EEF97F1849E8CAAD7BBACB /* ContentView.swift */; };
 		5D0E4B49CC0BBA469B265BB3 /* YTAudioDownloaderApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CCB6DC10C94E4C2AEFF4D99 /* YTAudioDownloaderApp.swift */; };
 		9CB0400F8D91949C7794F96A /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 412E1C5EB4ABEF8CBB0357BF /* Models.swift */; };
 		9D4751B04B94F46DFD7DDF82 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5EEF97F1849E8CAAD7BBACB /* ContentView.swift */; };
 		A1B461FA2CA506FFA656C3D9 /* DownloaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CDB1908A04E62D040E665E1 /* DownloaderViewModel.swift */; };
+		DE618F3E75539B6D178FCFFB /* server.py in Resources */ = {isa = PBXBuildFile; fileRef = 096DA9A858CBF0F53713416B /* server.py */; };
 		E138F150D129756DEC8B5E50 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 36BEAB637B0542992E10BFED /* Assets.xcassets */; };
 		EAF1303691A09116C3A6D12C /* DownloaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CDB1908A04E62D040E665E1 /* DownloaderViewModel.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		096DA9A858CBF0F53713416B /* server.py */ = {isa = PBXFileReference; lastKnownFileType = text.script.python; path = server.py; sourceTree = "<group>"; };
 		2CCB6DC10C94E4C2AEFF4D99 /* YTAudioDownloaderApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = YTAudioDownloaderApp.swift; sourceTree = "<group>"; };
 		2CDB1908A04E62D040E665E1 /* DownloaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloaderViewModel.swift; sourceTree = "<group>"; };
 		33A89762A396759890F45178 /* YTAudioDownloader-macOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "YTAudioDownloader-macOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		36BEAB637B0542992E10BFED /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		412E1C5EB4ABEF8CBB0357BF /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		685CEB29E561F42F5AF48AB1 /* YTAudioDownloader_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = YTAudioDownloader_macOS.entitlements; sourceTree = "<group>"; };
+		CA5759DF70B89C04CA79EE2A /* ServerManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ServerManager.swift; sourceTree = "<group>"; };
 		EE02D691C0A5AD78B0B35D9E /* YTAudioDownloader-iOS.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = "YTAudioDownloader-iOS.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5EEF97F1849E8CAAD7BBACB /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -36,6 +40,7 @@
 			children = (
 				BEFF34407A7703D70FB49813 /* macOS */,
 				3809A84D90E38DC390BAB1CF /* Shared */,
+				CF7CBE150F0348F3B17A0575 /* yt-audio-downloader */,
 				A1C228100E24C05C9B933268 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -65,10 +70,20 @@
 		BEFF34407A7703D70FB49813 /* macOS */ = {
 			isa = PBXGroup;
 			children = (
+				CA5759DF70B89C04CA79EE2A /* ServerManager.swift */,
 				685CEB29E561F42F5AF48AB1 /* YTAudioDownloader_macOS.entitlements */,
 			);
 			name = macOS;
 			path = Sources/macOS;
+			sourceTree = "<group>";
+		};
+		CF7CBE150F0348F3B17A0575 /* yt-audio-downloader */ = {
+			isa = PBXGroup;
+			children = (
+				096DA9A858CBF0F53713416B /* server.py */,
+			);
+			name = "yt-audio-downloader";
+			path = ..;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -155,6 +170,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E138F150D129756DEC8B5E50 /* Assets.xcassets in Resources */,
+				DE618F3E75539B6D178FCFFB /* server.py in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,6 +192,7 @@
 				9D4751B04B94F46DFD7DDF82 /* ContentView.swift in Sources */,
 				EAF1303691A09116C3A6D12C /* DownloaderViewModel.swift in Sources */,
 				067D520F4E147FA810433E96 /* Models.swift in Sources */,
+				23EC3CA619E39F9D1BA1C41A /* ServerManager.swift in Sources */,
 				19CFE975C6EC5B4F8A4663D9 /* YTAudioDownloaderApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
