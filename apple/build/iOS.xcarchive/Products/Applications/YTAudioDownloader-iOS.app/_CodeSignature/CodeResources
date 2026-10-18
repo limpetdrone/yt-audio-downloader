@@ -6,23 +6,39 @@
 	<dict>
 		<key>AppIcon60x60@2x.png</key>
 		<data>
-		SjScTz2daUb7KWj+sJ6l+/oyPVs=
+		dLYS6yqtgxIwmeUdSdmqG6ECcsQ=
 		</data>
 		<key>AppIcon76x76@2x~ipad.png</key>
 		<data>
-		Vj2oJchxxLq1dLO+SA5niqPW5GE=
+		14uwM1k81SMWZ3gRz5dbG6AkGHo=
 		</data>
 		<key>Assets.car</key>
 		<data>
-		ThSmH6fqmutvC51k1Lq4dJyMwfU=
+		8FJKrdfL8goJzt78Pwx6khnk8yo=
 		</data>
 		<key>Info.plist</key>
 		<data>
-		8CAoxfOS8leRSulYRDSrgZXUSlE=
+		iZ1BiR26lzrXGdLMNWFZRJ+/NpM=
 		</data>
 		<key>PkgInfo</key>
 		<data>
 		n57qDP4tZfLD1rCS43W0B4LQjzE=
+		</data>
+		<key>YouTubeKit_YouTubeKit.bundle/Info.plist</key>
+		<data>
+		s9H9GYyIgA8nSlRiFCiqhOB8CJ8=
+		</data>
+		<key>YouTubeKit_YouTubeKit.bundle/astring.umd.js</key>
+		<data>
+		4GjMOdFAOjfWoEpJmJTpmJsw79M=
+		</data>
+		<key>YouTubeKit_YouTubeKit.bundle/meriyah.umd.js</key>
+		<data>
+		z/VW0t8sMXWFSenDjlGDdOVy0yc=
+		</data>
+		<key>YouTubeKit_YouTubeKit.bundle/yt_ejs_helper.js</key>
+		<data>
+		CE7LgDl1e4CAwbBIZkWJp3FFGZ0=
 		</data>
 		<key>embedded.mobileprovision</key>
 		<data>
@@ -35,21 +51,49 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			UQxJ1x8uueKwA4hzcjYEpzcRFAJ0NQI8jf9W/PkuXto=
+			jPLwvi2iyEPly6ZwXZG9iwKEFzfZ1twshQLF+NOhgrM=
 			</data>
 		</dict>
 		<key>AppIcon76x76@2x~ipad.png</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			p4JIfI5s3AkveVD5BV/hG6nxhLg0QNh0uimG9q8HMHY=
+			aN/bpTO7aX3Nc4DhnzqPvnMPswko0z391uTyCOC/Zyg=
 			</data>
 		</dict>
 		<key>Assets.car</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			q66DsVrsEDBt6+wfh/z6E4pNryyoPNjzUuE3r4NnZas=
+			g2NNIVrDqbX1Uc4ZUSTCYqFEjl/Ky2QNj+RWDDYaPx0=
+			</data>
+		</dict>
+		<key>YouTubeKit_YouTubeKit.bundle/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			LblmW3p0PAjCUipzBgFkBL3oyAshzvkEK4EqvPKDbC0=
+			</data>
+		</dict>
+		<key>YouTubeKit_YouTubeKit.bundle/astring.umd.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			DEebXRrYRr3wXMmg8abHRuezQvM6EldZtRuQBGKAmKc=
+			</data>
+		</dict>
+		<key>YouTubeKit_YouTubeKit.bundle/meriyah.umd.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			tYgN7Rl/R9SIKOyedot1g26u46XdOgQiJ7WR/Iq1VRo=
+			</data>
+		</dict>
+		<key>YouTubeKit_YouTubeKit.bundle/yt_ejs_helper.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yiWeTjzdN9kvwmbZrwjU/WbahHniQPTZhPKdpALCLq0=
 			</data>
 		</dict>
 		<key>embedded.mobileprovision</key>

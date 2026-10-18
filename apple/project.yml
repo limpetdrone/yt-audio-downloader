@@ -5,6 +5,11 @@ options:
     iOS: "16.0"
     macOS: "13.0"
 
+packages:
+  YouTubeKit:
+    url: https://github.com/alexeichhorn/YouTubeKit.git
+    from: "0.4.9"
+
 settings:
   DEVELOPMENT_TEAM: 6Z45F3A37G
   CODE_SIGN_STYLE: Automatic
@@ -18,11 +23,8 @@ targets:
       - path: Sources/Shared
     info:
       path: Sources/iOS/Info.plist
-      properties:
-        CFBundleURLTypes:
-          - CFBundleURLName: com.davidpoka.ytaudiodownloader.connect
-            CFBundleURLSchemes:
-              - ytdownloader
+    dependencies:
+      - package: YouTubeKit
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.davidpoka.ytaudiodownloader
       INFOPLIST_KEY_CFBundleDisplayName: "YT Audio"
@@ -43,8 +45,8 @@ targets:
     sources:
       - path: Sources/Shared
       - path: Sources/macOS
-      - path: ../server.py
-        buildPhase: resources
+    dependencies:
+      - package: YouTubeKit
     settings:
       PRODUCT_BUNDLE_IDENTIFIER: com.davidpoka.ytaudiodownloader
       INFOPLIST_KEY_CFBundleDisplayName: "YT Audio"

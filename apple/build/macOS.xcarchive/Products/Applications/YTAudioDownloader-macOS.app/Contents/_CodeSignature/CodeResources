@@ -6,11 +6,27 @@
 	<dict>
 		<key>Resources/AppIcon.icns</key>
 		<data>
-		Wvrv4Lk4gYgOVEhXintQnRTywjQ=
+		FaWJNganyVyUvRMR85kdjuVCznc=
 		</data>
 		<key>Resources/Assets.car</key>
 		<data>
-		muGRn6dbq5rlIiUmAl4IUJNglAc=
+		p5EXU0LUE2GtjhXf46ZQkZVtJYs=
+		</data>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Info.plist</key>
+		<data>
+		OHv5oDNOVyODcpoT/QaPuRic2yY=
+		</data>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Resources/astring.umd.js</key>
+		<data>
+		4GjMOdFAOjfWoEpJmJTpmJsw79M=
+		</data>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Resources/meriyah.umd.js</key>
+		<data>
+		z/VW0t8sMXWFSenDjlGDdOVy0yc=
+		</data>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Resources/yt_ejs_helper.js</key>
+		<data>
+		CE7LgDl1e4CAwbBIZkWJp3FFGZ0=
 		</data>
 	</dict>
 	<key>files2</key>
@@ -19,14 +35,42 @@
 		<dict>
 			<key>hash2</key>
 			<data>
-			7SjF8wS+S7CpsFkNPtIqNHBo/hLVWGEIISOLK/X8x4U=
+			OHijTdeFSFFFXPb3igr0vdxnB82wVsJxL6jXS70UdYA=
 			</data>
 		</dict>
 		<key>Resources/Assets.car</key>
 		<dict>
 			<key>hash2</key>
 			<data>
-			Pgb9iE0L+qIQpw1q1ZPfFNmxH51YebMRp/RSQr5OBsY=
+			BDumWz1peKLA7uxD97h/RI5DjCLbWx3pyLcbFvNWIlA=
+			</data>
+		</dict>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Info.plist</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			olBqnRRTGgYmBvnQjIM3SAuyB2grgD7p0XXa294A798=
+			</data>
+		</dict>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Resources/astring.umd.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			DEebXRrYRr3wXMmg8abHRuezQvM6EldZtRuQBGKAmKc=
+			</data>
+		</dict>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Resources/meriyah.umd.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			tYgN7Rl/R9SIKOyedot1g26u46XdOgQiJ7WR/Iq1VRo=
+			</data>
+		</dict>
+		<key>Resources/YouTubeKit_YouTubeKit.bundle/Contents/Resources/yt_ejs_helper.js</key>
+		<dict>
+			<key>hash2</key>
+			<data>
+			yiWeTjzdN9kvwmbZrwjU/WbahHniQPTZhPKdpALCLq0=
 			</data>
 		</dict>
 	</dict>

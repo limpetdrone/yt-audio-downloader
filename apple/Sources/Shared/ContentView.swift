@@ -4,12 +4,6 @@ import AVKit
 
 public struct ContentView: View {
     @StateObject private var viewModel = DownloaderViewModel()
-    @State private var serverUrlDraft: String = ""
-    @State private var apiKeyDraft: String = ""
-    #if os(macOS)
-    @StateObject private var server = ServerManager()
-    #endif
-    @State private var showServerSettings: Bool = false
 
     public init() {}
 
@@ -36,7 +30,7 @@ public struct ContentView: View {
                 }
 
                 // Section 2: Format & Options
-                Section("2. Format & Quality") {
+                Section("2. Format") {
                     Picker("Format", selection: $viewModel.downloadType) {
                         ForEach(DownloadType.allCases) { type in
                             Text(type.label).tag(type)
@@ -45,16 +39,18 @@ public struct ContentView: View {
                     .pickerStyle(.segmented)
 
                     if viewModel.downloadType == .audio {
-                        Picker("Audio Bitrate", selection: $viewModel.selectedQuality) {
-                            ForEach(DownloadQuality.allCases) { q in
-                                Text(q.label).tag(q)
-                            }
+                        HStack {
+                            Image(systemName: "waveform")
+                                .foregroundColor(.purple)
+                            Text("High Quality Audio (M4A / AAC)")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
                         }
                     } else {
                         HStack {
                             Image(systemName: "film")
-                                .foregroundColor(.secondary)
-                            Text("Full HD / Best Video (MP4)")
+                                .foregroundColor(.blue)
+                            Text("Full HD Video (MP4)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
@@ -77,7 +73,7 @@ public struct ContentView: View {
                             HStack {
                                 Spacer()
                                 Image(systemName: viewModel.downloadType == .video ? "arrow.down.to.line.circle.fill" : "arrow.down.circle.fill")
-                                Text(viewModel.isDownloading ? "Downloading..." : (viewModel.downloadType == .video ? "Download Video (MP4)" : "Download MP3"))
+                                Text(viewModel.isDownloading ? "Downloading..." : (viewModel.downloadType == .video ? "Download Video (MP4)" : "Download Audio (M4A)"))
                                     .fontWeight(.semibold)
                                 Spacer()
                             }
@@ -88,69 +84,7 @@ public struct ContentView: View {
                     }
                 }
 
-                #if os(iOS)
-                // Section 4: Cloud Backend Server Connection
-                Section("Server Connection") {
-                    DisclosureGroup(isExpanded: $showServerSettings) {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Downloads run on your Mac through a secure tunnel. Scan the QR code in the Mac app with the iPhone camera, or enter the address and key here.")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-
-                            TextField(DownloaderViewModel.defaultServerUrl, text: $serverUrlDraft)
-                                .textFieldStyle(.roundedBorder)
-                                .keyboardType(.URL)
-                                .autocapitalization(.none)
-                                .disableAutocorrection(true)
-
-                            HStack {
-                                SecureField("Key (shown in the Mac app)", text: $apiKeyDraft)
-                                    .textFieldStyle(.roundedBorder)
-                                    .autocapitalization(.none)
-                                    .disableAutocorrection(true)
-
-                                Button("Save") {
-                                    viewModel.updateServerSettings(url: serverUrlDraft, key: apiKeyDraft)
-                                }
-                                .buttonStyle(.bordered)
-                            }
-
-                            Button {
-                                Task {
-                                    await viewModel.checkServerHealth()
-                                }
-                            } label: {
-                                HStack {
-                                    Image(systemName: "arrow.clockwise")
-                                    Text("Test Connection")
-                                }
-                                .font(.footnote)
-                            }
-                        }
-                        .padding(.vertical, 4)
-                    } label: {
-                        HStack {
-                            Image(systemName: "cloud.fill")
-                            Text("Mac Server / Tunnel")
-                            Spacer()
-                            HStack(spacing: 4) {
-                                Circle()
-                                    .fill(viewModel.isServerConnected ? Color.green : Color.orange)
-                                    .frame(width: 8, height: 8)
-                                Text(viewModel.serverStatusText)
-                                    .font(.caption)
-                                    .foregroundColor(viewModel.isServerConnected ? .green : .orange)
-                            }
-                        }
-                    }
-                }
-                #endif
-
-                #if os(macOS)
-                MacServerSection(server: server)
-                #endif
-
-                // Section 5: Downloaded Tracks / Videos Library
+                // Section 4: Downloaded Tracks / Videos Library
                 Section("Downloads (\(viewModel.tracks.count))") {
                     if viewModel.tracks.isEmpty {
                         Text("No items downloaded yet.")
@@ -168,7 +102,7 @@ public struct ContentView: View {
                                     Text(track.title)
                                         .font(.headline)
                                         .lineLimit(1)
-                                    Text("\(track.isVideo ? "MP4 Video" : "\(track.quality) kbps") • \(track.date.formatted(date: .abbreviated, time: .shortened))")
+                                    Text("\(track.isVideo ? "MP4 Video" : "Audio") • \(track.date.formatted(date: .abbreviated, time: .shortened))")
                                         .font(.caption)
                                         .foregroundColor(.secondary)
                                 }
@@ -226,20 +160,6 @@ public struct ContentView: View {
                 }
             }
             .navigationTitle("YT Downloader")
-            .onAppear {
-                serverUrlDraft = viewModel.serverUrl
-                apiKeyDraft = viewModel.apiKey
-                Task {
-                    await viewModel.checkServerHealth()
-                }
-            }
-            .onOpenURL { link in
-                if viewModel.applyPairingLink(link) {
-                    serverUrlDraft = viewModel.serverUrl
-                    apiKeyDraft = viewModel.apiKey
-                    showServerSettings = true
-                }
-            }
             .sheet(item: $viewModel.activeVideoTrack) { track in
                 NavigationStack {
                     VideoPlayer(player: AVPlayer(url: viewModel.fileURL(for: track)))

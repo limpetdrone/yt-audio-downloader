@@ -8,7 +8,7 @@ public enum DownloadType: String, CaseIterable, Identifiable, Codable {
 
     public var label: String {
         switch self {
-        case .audio: return "Audio (MP3)"
+        case .audio: return "Audio (M4A)"
         case .video: return "Video (MP4)"
         }
     }
