@@ -12,49 +12,57 @@ public struct ContentView: View {
             Form {
                 // Section 1: URL Input
                 Section("1. YouTube Link") {
-                    HStack {
-                        TextField("https://www.youtube.com/watch?v=...", text: $viewModel.urlInput)
+                    HStack(spacing: 8) {
+                        Image(systemName: "link")
+                            .foregroundColor(.secondary)
+
+                        TextField("", text: $viewModel.urlInput, prompt: Text("Illeszd be a teljes linket (pl. https://www.youtube.com/watch?v=...)"))
                             .textFieldStyle(.plain)
+                            .labelsHidden()
                             .disableAutocorrection(true)
                             #if os(iOS)
                             .autocapitalization(.none)
                             .keyboardType(.URL)
                             #endif
 
+                        if !viewModel.urlInput.isEmpty {
+                            Button {
+                                viewModel.urlInput = ""
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundColor(.secondary)
+                            }
+                            .buttonStyle(.plain)
+                        }
+
                         Button(action: viewModel.pasteFromClipboard) {
                             Label("Paste", systemImage: "doc.on.clipboard")
-                                .labelStyle(.titleAndIcon)
                         }
                         .buttonStyle(.bordered)
                     }
+                    .padding(.vertical, 4)
                 }
 
                 // Section 2: Format & Options
                 Section("2. Format") {
-                    Picker("Format", selection: $viewModel.downloadType) {
-                        ForEach(DownloadType.allCases) { type in
-                            Text(type.label).tag(type)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Picker("", selection: $viewModel.downloadType) {
+                            ForEach(DownloadType.allCases) { type in
+                                Text(type.label).tag(type)
+                            }
                         }
-                    }
-                    .pickerStyle(.segmented)
+                        .pickerStyle(.segmented)
+                        .labelsHidden()
 
-                    if viewModel.downloadType == .audio {
                         HStack {
-                            Image(systemName: "waveform")
-                                .foregroundColor(.purple)
-                            Text("High Quality Audio (M4A / AAC)")
-                                .font(.subheadline)
-                                .foregroundColor(.secondary)
-                        }
-                    } else {
-                        HStack {
-                            Image(systemName: "film")
-                                .foregroundColor(.blue)
-                            Text("Full HD Video (MP4)")
+                            Image(systemName: viewModel.downloadType == .audio ? "waveform" : "film")
+                                .foregroundColor(viewModel.downloadType == .audio ? .purple : .blue)
+                            Text(viewModel.downloadType == .audio ? "High Quality Audio (M4A / AAC)" : "Full HD Video (MP4)")
                                 .font(.subheadline)
                                 .foregroundColor(.secondary)
                         }
                     }
+                    .padding(.vertical, 4)
                 }
 
                 // Section 3: Status & Action
@@ -159,6 +167,7 @@ public struct ContentView: View {
                     }
                 }
             }
+            .formStyle(.grouped)
             .navigationTitle("YT Downloader")
             .sheet(item: $viewModel.activeVideoTrack) { track in
                 NavigationStack {

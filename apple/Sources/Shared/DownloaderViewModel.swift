@@ -64,15 +64,19 @@ public class DownloaderViewModel: ObservableObject {
     }
 
     public func startDownload() {
-        let trimmed = urlInput.trimmingCharacters(in: .whitespacesAndNewlines)
+        var trimmed = urlInput.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else {
             statusMessage = "Please enter a valid YouTube link."
             return
         }
 
-        guard trimmed.hasPrefix("http://") || trimmed.hasPrefix("https://") else {
-            statusMessage = "Invalid link: must start with https://"
-            return
+        if !trimmed.hasPrefix("http://") && !trimmed.hasPrefix("https://") {
+            if trimmed.count == 11 && !trimmed.contains("/") && !trimmed.contains(".") {
+                trimmed = "https://www.youtube.com/watch?v=\(trimmed)"
+            } else {
+                statusMessage = "Invalid link: must start with https://"
+                return
+            }
         }
 
         isDownloading = true

@@ -6,11 +6,8 @@ struct YTAudioDownloaderApp: App {
         WindowGroup {
             ContentView()
                 #if os(macOS)
-                .frame(minWidth: 550, idealWidth: 600, minHeight: 450, idealHeight: 520)
+                .frame(minWidth: 550, idealWidth: 620, minHeight: 520, idealHeight: 620)
                 #endif
         }
-        #if os(macOS)
-        .windowStyle(.hiddenTitleBar)
-        #endif
     }
 }
